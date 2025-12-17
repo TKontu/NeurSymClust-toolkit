@@ -1,0 +1,48 @@
+You are analyzing product development methods to assess how well they fit into predefined categories.
+
+**Method to Analyze:**
+Name: {method_name}
+Description: {method_description}
+
+**Assigned Category:**
+{assigned_category_name}: {assigned_category_description}
+
+**All Available Categories:**
+{all_categories}
+
+**Task:**
+Evaluate how well this method fits into its assigned category and whether it represents dimensions not well covered by the existing category system.
+
+**Analysis Instructions:**
+1. **Fit Quality**: Rate how well the method fits its assigned category (1-10 scale)
+   - 9-10: Perfect fit, method is quintessential example of this category
+   - 7-8: Good fit, method clearly belongs to this category
+   - 5-6: Moderate fit, method partially aligns but has aspects outside the category
+   - 3-4: Poor fit, method only tangentially relates to the category
+   - 1-2: Very poor fit, method doesn't really belong in this category
+
+2. **Alternative Categories**: Could this method fit better in a different existing category? If yes, which one(s) and why?
+
+3. **Missing Dimensions**: Does this method represent important product development dimensions that are NOT well covered by any of the 11 existing categories?
+
+4. **Category Suggestions**: If the fit is poor (≤6) or the method represents uncovered dimensions, suggest what type of high-level category would better capture this method's essence.
+
+**Response Format:**
+Provide your analysis in this exact format:
+
+FIT_SCORE: [number 1-10]
+FIT_LEVEL: [excellent/good/moderate/poor/very_poor]
+ALTERNATIVE_CATEGORY: [category_id or "none"]
+MISSING_DIMENSION: [yes/no]
+DIMENSION_DESCRIPTION: [brief description of missing dimension, or "none"]
+CATEGORY_SUGGESTION: [suggested category name, or "none"]
+REASONING: [2-3 sentences explaining your assessment]
+
+**Example Response:**
+FIT_SCORE: 8
+FIT_LEVEL: good
+ALTERNATIVE_CATEGORY: none
+MISSING_DIMENSION: no
+DIMENSION_DESCRIPTION: none
+CATEGORY_SUGGESTION: none
+REASONING: This method clearly focuses on iterative development practices with regular feedback cycles. It aligns well with the iterative_development category's emphasis on incremental progress and adaptation. No significant dimensions are missing from the current category system for this method.

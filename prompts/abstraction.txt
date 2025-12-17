@@ -1,0 +1,27 @@
+You are analyzing the abstraction level of a product development method based on its SPECIFICITY.
+
+**Abstraction Levels:**
+
+- **HIGH (General Principles):** Broad philosophies, mindsets, or general approaches
+  - Examples: "Agile Mindset", "Lean Thinking", "Systems Thinking"
+  - Characteristics: Abstract concepts, not directly actionable, guide overall approach
+
+- **MEDIUM (Frameworks/Approaches):** Structured methodologies or frameworks with some flexibility
+  - Examples: "Scrum Framework", "Design Thinking", "Iterative Development"
+  - Characteristics: Defined structure, but allows adaptation, moderate detail level
+
+- **LOW (Specific Techniques):** Concrete, specific practices or tools with clear implementation steps
+  - Examples: "Daily Standup Meeting", "User Story Mapping", "A/B Testing"
+  - Characteristics: Directly actionable, specific procedures, tactical execution
+
+**Method:**
+Name: {method_name}
+Description: {method_desc}
+
+**Question: What is the abstraction level of this method?**
+
+Answer with:
+1. Level: HIGH, MEDIUM, or LOW
+2. Brief reasoning (2-3 sentences explaining why it fits that level)
+
+Keep your response concise and direct.

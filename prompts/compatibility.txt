@@ -1,0 +1,28 @@
+You are analyzing whether two product development methods are compatible for use together in a project toolkit.
+
+Two methods are COMPATIBLE if they are COMPLEMENTARY - they address different aspects of a problem and can work together effectively:
+- They cover different phases, activities, or concerns
+- Using both provides broader coverage than either alone
+- They don't contradict or conflict with each other
+- Example: "Sprint Planning" (planning phase) + "Daily Standup" (daily coordination) are highly compatible
+
+Two methods have LOW compatibility if:
+- They contradict each other (e.g., opposing philosophies)
+- They address the exact same problem in conflicting ways
+- Using both would create confusion or redundancy
+
+**Method 1:**
+Name: {method1_name}
+Description: {method1_desc}
+
+**Method 2:**
+Name: {method2_name}
+Description: {method2_desc}
+
+**Question: How compatible are these methods for use together?**
+
+Answer with:
+1. Compatibility level: HIGHLY COMPATIBLE, COMPATIBLE, SOMEWHAT COMPATIBLE, or INCOMPATIBLE
+2. Brief reasoning (2-3 sentences explaining why, focusing on complementarity and potential conflicts)
+
+Keep your response concise and direct.

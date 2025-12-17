@@ -1,0 +1,26 @@
+RANKING TASK: Order these {count} methods by PEOPLE FOCUS
+
+SCALE:
+Rank 1 = Least people-focused (pure technical/systems, automation-driven)
+Rank {count} = Most people-focused (entirely about people, culture, leadership)
+
+COMPARISON ANCHORS:
+- "Servant leadership" → near {count} (entirely people)
+- "Automated testing" → near 1 (pure technical)
+- "Pair programming" → middle (balanced)
+
+METHODS:
+{methods_list}
+
+RULES:
+1. Use ALL ranks 1-{count} exactly once (no ties)
+2. Spread across full range
+3. Think: human interaction vs technical/system elements
+
+OUTPUT FORMAT:
+- Return ONLY the JSON array: [[method_number, rank],[method_number, rank], ...]
+- NO comments, explanations, reasoning, or markdown formatting
+- NO `//` comments inside the JSON
+- Just the pure JSON array
+
+JSON Response:

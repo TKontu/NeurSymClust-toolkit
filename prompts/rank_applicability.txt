@@ -1,0 +1,26 @@
+RANKING TASK: Order these {count} methods by APPLICABILITY
+
+SCALE:
+Rank 1 = Narrowest (niche, specific contexts/industries only)
+Rank {count} = Broadest (universal, applicable everywhere)
+
+COMPARISON ANCHORS:
+- "Clear communication" → near {count} (universal)
+- "FDA regulatory compliance" → near 1 (niche)
+- "API design" → middle (moderately general)
+
+METHODS:
+{methods_list}
+
+RULES:
+1. Use ALL ranks 1-{count} exactly once (no ties)
+2. Spread across full range
+3. Think: industry independence, context flexibility
+
+OUTPUT FORMAT:
+- Return ONLY the JSON array: [[method_number, rank],[method_number, rank], ...]
+- NO comments, explanations, reasoning, or markdown formatting
+- NO `//` comments inside the JSON
+- Just the pure JSON array
+
+JSON Response:

@@ -1,0 +1,103 @@
+# Methods Analysis Tool Configuration
+
+# LLM Settings (for analysis tasks)
+llm:
+  provider: openai  # OpenAI-compatible API
+  model: gpt-oss-20b #gpt-oss-20b #gemma3-12b-awq 
+  base_url: http://192.168.0.247:9003/v1
+  api_key: ollama  # Placeholder for local setup
+  temperature: 0.1
+  timeout: 900  # 15 minutes
+  max_retries: 5
+  retry_backoff_min: 2
+  retry_backoff_max: 60
+  max_concurrent: 100  # Concurrent LLM requests
+
+# Ranking Settings (for 12D analysis)
+ranking:
+  # Enhanced quality settings (10x more calls for better accuracy)
+  chunk_size: 10              # Reduced from 18 for better ranking accuracy
+  overlap_size: 4            # Increased from 4 for better calibration
+  parallel_chunks: 20        # Utilize VLLM concurrency (20 chunks for speed)
+
+  # Multi-pass validation for quality
+  ranking_rounds: 5          # Multiple passes per dimension for high-quality validation
+  cross_validation: true     # Validate consistency across chunks
+  consistency_threshold: 0.75 # Minimum correlation between passes (triggers warning if lower)
+
+  # Distribution settings
+  force_distribution: false  # Let natural distribution emerge from rankings (most realistic)
+  distribution_type: gaussian  # 'gaussian' or 'uniform' (only used if force_distribution=true)
+  gaussian_std: 17.0         # Standard deviation for gaussian (17 = 68% within ±17 of mean=50)
+  add_jitter: true          # Add small random variation to avoid ties
+  jitter_amount: 0.5        # Max jitter in score points
+
+  # Calibrated scoring (realistic ranges, no forced 0s/100s)
+  use_calibrated_scoring: true  # Use dimension-specific realistic score ranges
+
+  # Time estimate: ~75-100 minutes for 595 methods with 5-pass validation (with 20 concurrent)
+
+# Embedding Settings (for similarity search)
+embedding:
+  provider: openai  # OpenAI-compatible API
+  model: bge-large-en
+  base_url: http://192.168.0.136:9003/v1
+  api_key: ollama
+  batch_size: 25  # Chunks per batch
+  max_concurrent: 50
+  max_tokens: 450  # Optimal for 512 token model limit
+
+# Reranking Settings (optional, improves relevance)
+reranking:
+  enabled: true
+  model: bge-reranker-v2-m3
+  base_url: http://192.168.0.136:9003/v1
+  api_key: ollama
+  timeout: 120
+  initial_k: 20  # Retrieve more initially
+  final_k: 5  # Return fewer after reranking
+
+# Redis Cache (optional, deploy via Docker if needed)
+cache:
+  enabled: false  # Start without caching, enable later if needed
+  redis_host: redis
+  redis_port: 6379
+  redis_db: 0
+  ttl_seconds: 3600
+
+# Analysis Settings
+analysis:
+  # Duplicate detection
+  duplicate_similarity_threshold: 0.9  # Embedding cosine similarity
+
+  # Compatibility scoring
+  compatibility_weights:
+    complementarity: 0.6  # Methods address different aspects
+    no_conflicts: 0.4  # Methods don't contradict each other
+
+  # Abstraction levels (by specificity)
+  abstraction_categories:
+    - high  # General principles, philosophies
+    - medium  # Frameworks, approaches
+    - low  # Specific techniques, practices
+
+  # Smart sampling strategy
+  sampling:
+    high_similarity_threshold: 0.85  # Cosine similarity threshold
+    same_source_sample_rate: 0.10  # 10% of within-source pairs
+    cross_source_sample_rate: 0.05  # 5% of cross-source pairs
+    random_baseline_count: 500  # Random pairs for baseline
+    medium_similarity_max_pairs: 3000  # Max medium-similarity pairs for compatibility
+
+# Output Settings
+output:
+  directory: ./results
+  formats:
+    - json
+    - html
+  include_visualizations: true
+
+# Logging
+logging:
+  level: DEBUG  # Changed to DEBUG for detailed diagnostics during ranking
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

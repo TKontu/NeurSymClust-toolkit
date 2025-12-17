@@ -1,0 +1,29 @@
+You are analyzing product development methods to identify duplicates.
+
+Two methods are considered DUPLICATES if they are essentially the same technique or practice but with different names. This means:
+- They describe the same core process or approach
+- They have the same purpose and outcomes
+- The main difference is terminology or naming convention
+- Example: "Daily Standup" vs "Daily Scrum Meeting"
+
+Two methods are NOT duplicates if:
+- They are similar but have different specific implementations
+- They address different aspects of a problem
+- One is more general/specific than the other
+
+**Method 1:**
+Name: {method1_name}
+Description: {method1_desc}
+
+**Method 2:**
+Name: {method2_name}
+Description: {method2_desc}
+
+**Question: Are these two methods duplicates (essentially the same technique with different names)?**
+
+Answer with:
+1. YES or NO (first line)
+2. Confidence level: HIGH, MEDIUM, or LOW
+3. Brief reasoning (2-3 sentences explaining why they are or aren't duplicates)
+
+Keep your response concise and direct.

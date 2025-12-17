@@ -1,0 +1,28 @@
+You are analyzing the overlap between two product development methods.
+
+Methods have OVERLAP when they address similar or overlapping problems, even if they approach them differently:
+- They target the same or similar problem spaces
+- They produce similar types of outcomes
+- They could be alternatives to each other
+- Example: "Risk Assessment Matrix" and "Risk-Adjusted Backlog" both address risk management
+
+Methods have LOW OVERLAP when:
+- They address entirely different concerns
+- They apply to different phases or contexts
+- They serve complementary rather than overlapping purposes
+
+**Method 1:**
+Name: {method1_name}
+Description: {method1_desc}
+
+**Method 2:**
+Name: {method2_name}
+Description: {method2_desc}
+
+**Question: How much do these methods overlap in terms of the problems they address?**
+
+Answer with:
+1. Overlap level: HIGH OVERLAP, MODERATE OVERLAP, LOW OVERLAP, or NO OVERLAP
+2. Brief reasoning (2-3 sentences explaining what aspects overlap or don't)
+
+Keep your response concise and direct.

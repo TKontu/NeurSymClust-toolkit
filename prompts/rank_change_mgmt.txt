@@ -1,0 +1,26 @@
+RANKING TASK: Order these {count} methods by CHANGE MANAGEMENT DIFFICULTY
+
+SCALE:
+Rank 1 = Least difficult (minimal organizational disruption, easy buy-in)
+Rank {count} = Most difficult (major cultural shift, organizational resistance, power structure changes)
+
+COMPARISON ANCHORS:
+- "Adding a task board" → near 1 (minimal disruption)
+- "Self-organizing teams" → near {count} (power shift, cultural transformation)
+- "Cross-functional teams" → middle (moderate organizational change)
+
+METHODS:
+{methods_list}
+
+RULES:
+1. Use ALL ranks 1-{count} exactly once (no ties)
+2. Spread across full range
+3. Think: organizational inertia, stakeholder buy-in, workflow disruption, cultural transformation
+
+OUTPUT FORMAT:
+- Return ONLY the JSON array: [[method_number, rank],[method_number, rank], ...]
+- NO comments, explanations, reasoning, or markdown formatting
+- NO `//` comments inside the JSON
+- Just the pure JSON array
+
+JSON Response:

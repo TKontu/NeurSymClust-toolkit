@@ -1,0 +1,25 @@
+You are analyzing a product development method to categorize it.
+
+**Method:**
+Name: {method_name}
+Description: {method_desc}
+
+**Available Categories:**
+{categories_list}
+
+**Question: Which category best fits this method?**
+
+Select the ONE most appropriate category from the list above. Consider:
+- The primary purpose and focus of the method
+- What problem space it addresses
+- Its main application area
+
+Answer with:
+1. Category ID (e.g., "iterative_development")
+2. Brief reasoning (1-2 sentences explaining why this category fits best)
+
+Format your response as:
+Category: [category_id]
+Reasoning: [your explanation]
+
+Keep your response concise and direct.
