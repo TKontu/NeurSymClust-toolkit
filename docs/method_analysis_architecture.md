@@ -63,9 +63,10 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │  595 methods → Create overlapping chunks                                 │
 │                                                                          │
 │  Configuration:                                                          │
-│    • Chunk size: 18 methods per LLM call                                │
+│    • Chunk size: 10 methods per LLM call (reduced from 18 for better   │
+│      LLM ranking accuracy)                                              │
 │    • Overlap size: 4 methods between consecutive chunks                 │
-│    • Result: ~60-70 chunks with 4-method overlap for calibration        │
+│    • Result: ~98 chunks with 4-method overlap for calibration           │
 │                                                                          │
 │  Purpose of Overlap:                                                     │
 │    • Methods appearing in multiple chunks provide calibration points    │
@@ -86,8 +87,8 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │     • Specifies output format (JSON array)                              │
 │                                                                          │
 │  2. Process chunks in parallel batches                                   │
-│     • 4 chunks processed simultaneously (configurable)                   │
-│     • Each chunk: LLM ranks 18 methods from 1-18                        │
+│     • 20 chunks processed simultaneously (utilizes VLLM concurrency)     │
+│     • Each chunk: LLM ranks 10 methods from 1-10                        │
 │     • Strict validation: no ties, all ranks used exactly once           │
 │                                                                          │
 │  3. Retry logic with exponential backoff                                 │
@@ -146,7 +147,7 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │                                                                          │
 │  3. Cross-Validation Metrics                                             │
 │     • Calculate pairwise correlation between passes                      │
-│     • Consistency threshold: 0.80 minimum correlation                   │
+│     • Consistency threshold: 0.75 minimum correlation                   │
 │     • Warn if consistency drops below threshold                         │
 └────────────────────────────────────────────────────────────────────────┘
                                      │
@@ -157,9 +158,9 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │                                                                          │
 │  Step 4a: Chunk-Local Normalization                                      │
 │  ─────────────────────────────────                                       │
-│  • Each chunk's ranks (1-18) normalized to 0-1 scale                    │
-│  • Formula: normalized = (rank - 1) / (chunk_size - 1)                  │
-│  • Rank 1 → 0.0, Rank 18 → 1.0                                          │
+│  • Each chunk's ranks (1-10) normalized to 0-1 scale                    │
+│  • Formula: normalized = (rank - 1) / (chunk_size - 1), chunk_size=10  │
+│  • Rank 1 → 0.0, Rank 10 → 1.0                                          │
 │                                                                          │
 │  Step 4b: Overlap-Based Calibration                                      │
 │  ────────────────────────────────                                        │
@@ -174,8 +175,9 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │  • 1-2 passes: Use mean                                                 │
 │  • Result: Single 0-1 score per method per dimension                    │
 │                                                                          │
-│  Step 4d: Calibrated Score Conversion                                    │
-│  ────────────────────────────────────                                    │
+│  Step 4d: Calibrated Score Conversion (force_distribution: false)        │
+│  ────────────────────────────────────────────────────────────            │
+│  • Uses calibrated scoring instead of forced normal distribution        │
 │  • Map 0-1 normalized scores to realistic 0-100 ranges                  │
 │  • Avoid artificial extremes (0 or 100)                                 │
 │  • Dimension-specific ranges:                                           │
@@ -185,6 +187,7 @@ The 12-dimensional analysis scores each method across 12 independent dimensions 
 │    - Bottom 10% compressed to below typical_min                         │
 │    - Top 10% compressed to above typical_max                            │
 │    - Middle 80% linearly mapped to typical range                        │
+│  • Natural distribution emerges from semantic rankings                  │
 │                                                                          │
 │  Step 4e: Global Calibration                                             │
 │  ───────────────────────────                                             │
@@ -210,21 +213,21 @@ This section provides the mathematical details of how LLM rankings are converted
 
 #### Step 1: Chunk-Local Normalization
 
-Each chunk produces ranks 1 to N (where N = chunk_size, typically 18). These are normalized to a 0-1 scale:
+Each chunk produces ranks 1 to N (where N = chunk_size = 10). These are normalized to a 0-1 scale:
 
 ```
 normalized_score = (rank - 1) / (chunk_size - 1)
 ```
 
-**Example (chunk of 18 methods):**
+**Example (chunk of 10 methods):**
 
 | Rank | Normalized Score |
 |------|------------------|
-| 1 | (1-1)/(18-1) = 0.000 |
-| 5 | (5-1)/(18-1) = 0.235 |
-| 9 | (9-1)/(18-1) = 0.471 |
-| 14 | (14-1)/(18-1) = 0.765 |
-| 18 | (18-1)/(18-1) = 1.000 |
+| 1 | (1-1)/(10-1) = 0.000 |
+| 3 | (3-1)/(10-1) = 0.222 |
+| 5 | (5-1)/(10-1) = 0.444 |
+| 8 | (8-1)/(10-1) = 0.778 |
+| 10 | (10-1)/(10-1) = 1.000 |
 
 #### Step 2: Overlap Averaging (The Calibration Mechanism)
 
@@ -233,25 +236,25 @@ Methods appearing in multiple chunks (due to 4-method overlap) have multiple nor
 **How chunks overlap:**
 
 ```
-Chunk 1: [M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11, M12, M13, M14, M15, M16, M17, M18]
-                                                            ↓ overlap ↓
-Chunk 2:                                     [M15, M16, M17, M18, M19, M20, M21, M22, M23, ...]
-                                                            ↓ overlap ↓
-Chunk 3:                                                         [M29, M30, M31, M32, M33, ...]
+Chunk 1: [M1, M2, M3, M4, M5, M6, M7, M8, M9, M10]
+                              ↓ overlap ↓
+Chunk 2:              [M7, M8, M9, M10, M11, M12, M13, M14, M15, M16]
+                                        ↓ overlap ↓
+Chunk 3:                        [M13, M14, M15, M16, M17, M18, M19, M20, M21, M22]
 ```
 
-Methods M15-M18 appear in both Chunk 1 and Chunk 2. Their normalized scores from each chunk are averaged:
+Methods M7-M10 appear in both Chunk 1 and Chunk 2. Their normalized scores from each chunk are averaged:
 
 **Example:**
 
 | Method | Chunk 1 Rank | Chunk 1 Norm | Chunk 2 Rank | Chunk 2 Norm | Merged Score |
 |--------|--------------|--------------|--------------|--------------|--------------|
-| M15 | 15/18 | 0.824 | 3/18 | 0.118 | 0.471 |
-| M16 | 16/18 | 0.882 | 4/18 | 0.176 | 0.529 |
-| M17 | 17/18 | 0.941 | 2/18 | 0.059 | 0.500 |
-| M18 | 18/18 | 1.000 | 1/18 | 0.000 | 0.500 |
+| M7 | 7/10 | 0.667 | 1/10 | 0.000 | 0.333 |
+| M8 | 8/10 | 0.778 | 2/10 | 0.111 | 0.444 |
+| M9 | 9/10 | 0.889 | 3/10 | 0.222 | 0.556 |
+| M10 | 10/10 | 1.000 | 4/10 | 0.333 | 0.667 |
 
-**Why this works:** Methods ranked high in Chunk 1 (positions 15-18) were the "most strategic" in that group. In Chunk 2, these same methods are now compared against even more strategic methods, so they rank lower. Averaging smooths this transition and places them appropriately on the global scale.
+**Why this works:** Methods ranked high in Chunk 1 (positions 7-10) were the "most strategic" in that group. In Chunk 2, these same methods are now compared against even more strategic methods, so they rank lower. Averaging smooths this transition and places them appropriately on the global scale.
 
 **Single-chunk methods:** Methods appearing in only one chunk simply use their normalized score directly from that chunk.
 
@@ -339,36 +342,75 @@ If score > max_realistic:
 
 This preserves ranking order while avoiding extreme values.
 
+#### Why Calibrated Scoring Instead of Forced Normal Distribution?
+
+**Configuration Choice: `force_distribution: false`**
+
+The system has the capability to force scores into a normal (Gaussian) distribution with mean=50 and standard deviation=17. However, this is **intentionally disabled** in favor of calibrated scoring. Here's why:
+
+**Problems with Forced Normal Distribution:**
+
+1. **Artificial Constraints**: Forcing a normal distribution assumes that method characteristics naturally follow a bell curve, which may not be true. For example:
+   - On the "Scope" dimension, there might genuinely be more tactical methods than strategic ones
+   - On "Impact Potential", high-impact methods might cluster at certain score ranges based on their nature
+
+2. **Loss of Semantic Information**: If the LLM consistently ranks certain methods as similar across multiple passes and comparison groups, forcing them into a normal distribution artificially spreads them apart
+
+3. **Dimension-Specific Distributions**: Different dimensions may have different natural distributions:
+   - "Ease of Adoption" might be skewed (more hard-to-adopt methods)
+   - "Applicability" might be bimodal (niche vs. universal, with fewer in between)
+
+**Benefits of Calibrated Scoring:**
+
+1. **Natural Distribution**: Scores emerge organically from LLM semantic understanding and multi-pass validation
+
+2. **Dimension-Appropriate Ranges**: Each dimension has realistic min/max values that reflect domain knowledge:
+   - Even the most tactical method has "some scope" (min=5, not 0)
+   - Even strategic methods aren't "everywhere applicable" (max=95, not 100)
+
+3. **Preserves Semantic Clustering**: If methods are genuinely similar, their scores will be close together
+
+4. **More Realistic Assessment**: The calibrated ranges reflect expert understanding that true extremes (0 or 100) are rare in practice
+
+**When Would Forced Distribution Be Used?**
+
+The forced normal distribution mode exists for comparative analysis scenarios:
+- Comparing methods across completely different domains where relative ranking is more important than absolute scores
+- Research studies requiring standardized score distributions
+- Visualization needs that assume normal distributions
+
+**Current Implementation**: Natural emergence with realistic boundaries is more truthful to the underlying method characteristics than forcing an artificial statistical distribution.
+
 #### Complete Worked Example
 
 **Method: "Sprint Planning" on Scope dimension**
 
 1. **Chunk Rankings (5 passes):**
-   - Pass 1: Chunk 3 rank 7/18, Chunk 4 rank 5/18
-   - Pass 2: Chunk 2 rank 8/18, Chunk 3 rank 6/18
-   - Pass 3: Chunk 5 rank 9/18
-   - Pass 4: Chunk 1 rank 7/18, Chunk 2 rank 8/18
-   - Pass 5: Chunk 4 rank 6/18
+   - Pass 1: Chunk 3 rank 4/10, Chunk 4 rank 3/10
+   - Pass 2: Chunk 2 rank 5/10, Chunk 3 rank 3/10
+   - Pass 3: Chunk 5 rank 5/10
+   - Pass 4: Chunk 1 rank 4/10, Chunk 2 rank 5/10
+   - Pass 5: Chunk 4 rank 3/10
 
 2. **Normalize and merge per pass:**
-   - Pass 1: avg(0.353, 0.235) = 0.294
-   - Pass 2: avg(0.412, 0.294) = 0.353
-   - Pass 3: 0.471
-   - Pass 4: avg(0.353, 0.412) = 0.382
-   - Pass 5: 0.294
+   - Pass 1: avg(0.333, 0.222) = 0.278
+   - Pass 2: avg(0.444, 0.222) = 0.333
+   - Pass 3: 0.444
+   - Pass 4: avg(0.333, 0.444) = 0.389
+   - Pass 5: 0.222
 
-3. **Trimmed mean:** Sort [0.294, 0.294, 0.353, 0.382, 0.471], trim ends → mean([0.294, 0.353, 0.382]) = **0.343**
+3. **Trimmed mean:** Sort [0.222, 0.278, 0.333, 0.389, 0.444], trim ends → mean([0.278, 0.333, 0.389]) = **0.333**
 
 4. **Calibrated conversion (Scope: typical 20-80):**
-   - 0.343 is in middle 80% (0.1 to 0.9)
-   - position = (0.343 - 0.1) / 0.8 = 0.304
-   - score = 20 + 0.304 × 60 = **38.2**
+   - 0.333 is in middle 80% (0.1 to 0.9)
+   - position = (0.333 - 0.1) / 0.8 = 0.291
+   - score = 20 + 0.291 × 60 = **37.5**
 
-5. **Add jitter:** 38.2 + 0.3 = **38.5**
+5. **Add jitter:** 37.5 + 0.3 = **37.8**
 
-6. **Global calibration:** 38.5 is within realistic bounds (5-95) → **38.5** (unchanged)
+6. **Global calibration:** 37.8 is within realistic bounds (5-95) → **37.8** (unchanged)
 
-**Final Score: 38.5** (indicating Sprint Planning is moderately tactical on the Scope dimension)
+**Final Score: 37.8** (indicating Sprint Planning is moderately tactical on the Scope dimension)
 
 ```
                                      │
@@ -406,12 +448,12 @@ This preserves ranking order while avoiding extreme values.
 | Metric | Value |
 |--------|-------|
 | Total methods | 595 |
-| Chunks per dimension | ~60-70 |
-| Parallel chunks | 4 (configurable up to 20) |
+| Chunks per dimension | ~98 chunks (chunk_size=10, overlap=4) |
+| Parallel chunks | 20 (utilizing VLLM concurrency) |
 | Validation passes | 5 |
 | Dimensions | 12 |
-| Estimated time | 75-100 minutes |
-| LLM calls | ~4,200 (70 chunks × 12 dims × 5 passes) |
+| Estimated time | 75-100 minutes (with 20 parallel chunks) |
+| LLM calls | ~5,880 (98 chunks × 12 dims × 5 passes) |
 
 ### Quality Assurance Mechanisms
 
@@ -428,7 +470,7 @@ This preserves ranking order while avoiding extreme values.
 
 3. **Cross-Pass Correlation**
    - Computes pairwise correlation between ranking passes
-   - Threshold: 0.80 minimum average correlation
+   - Threshold: 0.75 minimum average correlation
    - Option to fail on low consistency (configurable)
 
 4. **Distribution Validation**
@@ -847,13 +889,15 @@ embedding:
   max_concurrent: 50
 
 ranking:
-  chunk_size: 18                    # Methods per ranking call
+  chunk_size: 10                    # Methods per ranking call (reduced from 18)
   overlap_size: 4                   # Overlap between chunks
-  parallel_chunks: 4                # Concurrent chunk processing
-  ranking_rounds: 5                 # Validation passes
-  use_calibrated_scoring: true      # Realistic score ranges
-  consistency_threshold: 0.8        # Min correlation between passes
-  gaussian_std: 17.0                # Score distribution spread
+  parallel_chunks: 20               # Concurrent chunk processing (utilizes VLLM)
+  ranking_rounds: 5                 # Validation passes per dimension
+  cross_validation: true            # Validate consistency across chunks
+  consistency_threshold: 0.75       # Min correlation between passes
+  force_distribution: false         # Let natural distribution emerge
+  use_calibrated_scoring: true      # Realistic score ranges per dimension
+  gaussian_std: 17.0                # Score distribution spread (if forced)
   add_jitter: true                  # Small random variation
   jitter_amount: 0.5                # Max jitter in score points
 ```
